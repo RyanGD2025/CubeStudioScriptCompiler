@@ -160,3 +160,42 @@ private void VisitCallStatement(CallStatementNode node)
         VisitExpression(arg);
     }
 }
+// Adicionar em SemanticAnalyzer.cs
+private void VisitExpression(ExpressionNode node)
+{
+    switch (node)
+    {
+        case LiteralNode n: VisitLiteral(n); break;
+        case BinaryExpressionNode n: VisitBinaryExpression(n); break;
+        // ... (Adicionar outros tipos de expressão, se houver)
+    }
+}
+
+private void VisitLiteral(LiteralNode node)
+{
+    // Verifica se o literal é, na verdade, um identificador (variável)
+    if (node.Tipo == TipoToken.IDENTIFICADOR)
+    {
+        Symbol symbol = _currentScope.Resolve(node.Valor);
+        
+        if (symbol == null)
+        {
+            // ERRO SEMÂNTICO: A variável está sendo usada antes de ser declarada
+            throw new Exception($"ERRO SEMÂNTICO: Variavel '{node.Valor}' nao declarada (escopo: {_currentScope.Name}).");
+        }
+    }
+}
+
+private void VisitBinaryExpression(BinaryExpressionNode node)
+{
+    // Verifica o lado esquerdo e o lado direito da expressão recursivamente
+    VisitExpression(node.Left);
+    VisitExpression(node.Right);
+    
+    // NOTA: Aqui você faria a VERIFICAÇÃO DE TIPO (Ex: 10 + 5 é válido; 10 + "texto" pode ser inválido).
+}
+// Dentro de VisitStatement(StatementNode node)
+// ...
+// Adicionar esta linha no switch:
+case CallStatementNode n: VisitCallStatement(n); break; 
+// ...
