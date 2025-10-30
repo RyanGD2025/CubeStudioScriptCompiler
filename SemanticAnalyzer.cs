@@ -137,3 +137,26 @@ namespace CubeStudioScriptCompiler
         }
     }
 }
+// Adicionar em SemanticAnalyzer.cs
+private void VisitCallStatement(CallStatementNode node)
+{
+    // O primeiro item do 'Path' é o nome da função/objeto raiz (Ex: 'print' ou 'add')
+    string rootName = node.Path[0];
+    
+    // Tenta resolver o nome no escopo atual e nos pais
+    Symbol symbol = _currentScope.Resolve(rootName);
+
+    if (symbol == null)
+    {
+        // ERRO SEMÂNTICO: A função/variável 'rootName' não foi declarada
+        throw new Exception($"ERRO SEMÂNTICO: O objeto ou função '{rootName}' não está definido.");
+    }
+
+    // NOTA: Se for uma função ou classe, o código verificaria aqui se os argumentos são válidos.
+    
+    // Visita recursivamente todos os argumentos para garantir que todas as variáveis usadas neles existam.
+    foreach (var arg in node.Arguments)
+    {
+        VisitExpression(arg);
+    }
+}
