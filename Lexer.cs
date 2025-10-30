@@ -95,6 +95,25 @@ namespace CubeStudioScriptCompiler
 
         // --- Função Principal: Retorna o Próximo Token ---
         public Token GetNextToken()
+            // Dentro do método GetNextToken(), na seção 6. Verifica SÍMBOLOS
+switch (currentChar)
+{
+    // ... casos existentes
+    case '+': tipoSimbolo = TipoToken.OP_ADICAO; break;
+    case '-': tipoSimbolo = TipoToken.OP_SUBTRACAO; break;
+    case '*': tipoSimbolo = TipoToken.OP_MULTIPLICACAO; break;
+    case '/': tipoSimbolo = TipoToken.OP_DIVISAO; break; // Cuidado com comentários (// ou /*) já tratados!
+
+    case '>':
+        // Por simplicidade, assumimos que > não é seguido por = (>=), apenas >
+        tipoSimbolo = TipoToken.OP_MAIOR_QUE; break;
+    case '<':
+        // Por simplicidade, assumimos que < não é seguido por = (<=), apenas <
+        tipoSimbolo = TipoToken.OP_MENOR_QUE; break;
+        
+    // ... (Mantenha o resto dos casos IGUAL e !)
+}
+        
         {
             // 1. Ignora Espaços em Branco e Comentários
             while (_posicao < _codigoFonte.Length)
