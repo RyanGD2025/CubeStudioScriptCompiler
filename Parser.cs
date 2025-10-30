@@ -374,3 +374,23 @@ private ExpressionNode ParseExpression(int parentPrecedence = 0)
 
     return left;
 }
+// Adicionar em Parser.cs
+/// <summary>
+/// Analisa: class NomeDaClasse { ... }
+/// </summary>
+private ClassDeclarationNode ParseClassDeclaration()
+{
+    Consume(TipoToken.CLASS); // Consome 'class'
+
+    Expect(TipoToken.IDENTIFICADOR);
+    var name = _currentToken.Lexema;
+    Consume(TipoToken.IDENTIFICADOR); // Nome da classe
+
+    // O corpo da classe é analisado como um bloco de instruções
+    // NOTA: No futuro, este bloco só poderá conter 'local' (propriedades) e 'function' (métodos).
+    var body = ParseBlock();
+    
+    // NOTA: Não há ponto-e-vírgula após a declaração de classe
+    
+    return new ClassDeclarationNode(name, body);
+}
