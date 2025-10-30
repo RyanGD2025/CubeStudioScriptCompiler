@@ -1,0 +1,202 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+
+namespace CubeStudioScriptCompiler
+{
+    // O Gerador de Código que traduz AST (CSScript) para JS (runtime.js)
+    public class CodeGenerator
+    {
+        private readonly StringBuilder _sb = new StringBuilder();
+        private int _indentationLevel = 0;
+
+        // Propriedades do motor de jogo que serão mapeadas para funções JS/Engine
+        private static readonly Dictionary<string, string> GamePropertyMap = new Dictionary<string, string>
+        {
+            // Propriedades do CSScript : Mapeamento em JS
+            {"Pos", "setPos"}, 
+            {"Size", "setSize"},
+            {"Image", "setImage"},
+            // Adicionar mais mapeamentos aqui (ex: Collide, Anchored)
+        };
+
+        private void Indent()
+        {
+            _sb.Append(new string(' ', _indentationLevel * 4));
+        }
+
+        private void AppendLine(string code)
+        {
+            Indent();
+            _sb.AppendLine(code);
+        }
+
+        // =================================================================
+        // 1. O MÉTODO PRINCIPAL
+        // =================================================================
+        public string Generate(List<StatementNode> ast)
+        {
+            // --- HEADER do runtime.js (Setup inicial do ambiente JS/Motor) ---
+            _sb.AppendLine("// Cube Studio Script Runtime - Gerado em " + DateTime.Now);
+            _sb.AppendLine("const Engine = window.CubeStudioEngine; // Assumindo que o motor JS global existe\n");
+            
+            // Gerar o código de cada instrução principal
+            foreach (var statement in ast)
+            {
+                VisitStatement(statement);
+            }
+
+            return _sb.ToString();
+        }
+
+        // =================================================================
+        // 2. MÉTODOS DE VISITA (TRADUÇÃO)
+        // =================================================================
+
+        private void VisitStatement(StatementNode node)
+        {
+            switch (node)
+            {
+                case LocalDeclarationNode n: VisitLocalDeclaration(n); break;
+                case CallStatementNode n: VisitCallStatement(n); break;
+                case IfStatementNode n: VisitIfStatement(n); break;
+                case WhileStatementNode n: VisitWhileStatement(n); break;
+                case ReturnStatementNode n: VisitReturnStatement(n); break;
+                case FunctionDeclarationNode n: VisitFunctionDeclaration(n); break;
+                case ClassDeclarationNode n: VisitClassDeclaration(n); break;
+                case BlockNode n: VisitBlock(n); break;
+                // Outras instruções...
+            }
+        }
+
+        private void VisitBlock(BlockNode node)
+        {
+            AppendLine("{");
+            _indentationLevel++;
+            foreach (var statement in node.Statements)
+            {
+                VisitStatement(statement);
+            }
+            _indentationLevel--;
+            AppendLine("}");
+        }
+
+        // --- EXPRESSÕES ---
+
+        private string VisitExpression(ExpressionNode node)
+        {
+            if (node is LiteralNode literal)
+            {
+                if (literal.Tipo == TipoToken.STRING)
+                    return $"\"{literal.Valor}\""; // Strings precisam de aspas em JS
+                if (literal.Tipo == TipoToken.TRUE || literal.Tipo == TipoToken.FALSE)
+                    return literal.Valor.ToLower(); // Booleanos em JS são minúsculos (true/false)
+                if (literal.Tipo == TipoToken.IDENTIFICADOR || literal.Tipo == TipoToken.NUMERO)
+                    return literal.Valor; // Variáveis e números são diretos
+            }
+            else if (node is BinaryExpressionNode binary)
+            {
+                // Traduz a expressão binária respeitando a precedência (o Parser já garantiu a ordem)
+                string op = GetJSOperator(binary.Operator);
+                string left = VisitExpression(binary.Left);
+                string right = VisitExpression(binary.Right);
+                
+                // Envolve a expressão binária em parênteses para garantir a ordem de execução no JS
+                return $"({left} {op} {right})";
+            }
+            
+            // Se for um tipo de expressão complexa não mapeada, usa seu nome
+            return "/* EXPRESSAO NAO MAPEADA */";
+        }
+        
+        private string GetJSOperator(TipoToken csscriptOp)
+        {
+            // Mapeamento de Operadores CSScript para JavaScript
+            switch (csscriptOp)
+            {
+                case TipoToken.IGUAL: return "=";
+                case TipoToken.OP_ADICAO: return "+";
+                case TipoToken.OP_SUBTRACAO: return "-";
+                case TipoToken.OP_MULTIPLICACAO: return "*";
+                case TipoToken.OP_DIVISAO: return "/";
+                case TipoToken.OP_IGUALDADE: return "=="; 
+                case TipoToken.OP_DIFERENCA: return "!=";
+                case TipoToken.OP_MAIOR_QUE: return ">";
+                case TipoToken.OP_MENOR_QUE: return "<";
+                default: return "/* OPR INV */";
+            }
+        }
+
+        // --- INSTRUÇÕES ---
+
+        private void VisitLocalDeclaration(LocalDeclarationNode node)
+        {
+            string value = node.InitialValue != null ? VisitExpression(node.InitialValue) : "null";
+            AppendLine($"let {node.Name} = {value};");
+        }
+
+        private void VisitCallStatement(CallStatementNode node)
+        {
+            string arguments = string.Join(", ", node.Arguments.Select(VisitExpression));
+            
+            // O PATH é mapeado para chamadas encadeadas em JS (Ex: print.log.Console)
+            string callPath = string.Join(".", node.Path); 
+            
+            // Se o último item do Path for uma Propriedade (Ex: Sprite.Pos = vector(x,y))
+            if (node.Path.Count > 1 && GamePropertyMap.ContainsKey(node.Path.Last()))
+            {
+                string propertyName = node.Path.Last();
+                string objectPath = string.Join(".", node.Path.Take(node.Path.Count - 1));
+                string jsMethod = GamePropertyMap[propertyName];
+                
+                // Traduz Sprite.Pos(...) para Sprite.setPos(...)
+                AppendLine($"{objectPath}.{jsMethod}({arguments});");
+            }
+            else
+            {
+                // Traduz chamadas normais (Ex: add(sprite) ou print.log.Console(msg))
+                AppendLine($"{callPath}({arguments});");
+            }
+        }
+        
+        private void VisitIfStatement(IfStatementNode node)
+        {
+            AppendLine($"if ({VisitExpression(node.Condition)})");
+            VisitBlock(node.IfBlock);
+            
+            if (node.ElseBlock != null)
+            {
+                AppendLine("else");
+                VisitBlock(node.ElseBlock);
+            }
+        }
+
+        private void VisitWhileStatement(WhileStatementNode node)
+        {
+            AppendLine($"while ({VisitExpression(node.Condition)})");
+            VisitBlock(node.LoopBlock);
+        }
+
+        private void VisitReturnStatement(ReturnStatementNode node)
+        {
+            string value = node.Value != null ? VisitExpression(node.Value) : "";
+            AppendLine($"return {value};");
+        }
+
+        private void VisitFunctionDeclaration(FunctionDeclarationNode node)
+        {
+            string parameters = string.Join(", ", node.Parameters);
+            AppendLine($"function {node.Name}({parameters})");
+            VisitBlock(node.Body);
+        }
+
+        private void VisitClassDeclaration(ClassDeclarationNode node)
+        {
+            // Mapeia classes do CSScript para classes JavaScript
+            AppendLine($"class {node.Name}");
+            VisitBlock(node.Body);
+            // NOTA: O corpo da classe precisa ser ajustado para métodos/propriedades JS
+        }
+    }
+}
