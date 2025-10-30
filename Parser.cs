@@ -288,3 +288,23 @@ private FunctionDeclarationNode ParseFunctionDeclaration()
     
     return new FunctionDeclarationNode(name, parameters, body);
 }
+// Adicionar em Parser.cs
+/// <summary>
+/// Analisa: return expressao; OU return;
+/// </summary>
+private ReturnStatementNode ParseReturnStatement()
+{
+    Consume(TipoToken.RETURN); // Consome 'return'
+
+    ExpressionNode returnedValue = null;
+
+    // Se o próximo token NÃO for um ponto e vírgula, significa que há um valor a ser retornado
+    if (_currentToken.Tipo != TipoToken.PONTO_E_VIRGULA)
+    {
+        returnedValue = ParseSimpleExpression(); // Analisa o valor (ex: 10, variavel, true)
+    }
+
+    Consume(TipoToken.PONTO_E_VIRGULA); // Consome ';'
+    
+    return new ReturnStatementNode(returnedValue);
+}
