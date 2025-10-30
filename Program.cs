@@ -83,6 +83,54 @@ class Program
     // =================================================================
     static void Main(string[] args)
     {
+        // Dentro de static void Main(string[] args)
+static void Main(string[] args)
+{
+    // ... (restante da inicialização)
+
+    const string codigoCsscript =
+        "function iniciar(x) {" +
+        "  local vidas = 10 * x;" +
+        "  if (vidas == 0) {" +
+        "    print.log.Console(\"Fim de Jogo\");" +
+        "    return false;" +
+        "  } else {" +
+        "    Sprite.Pos(vidas, 50);" +
+        "  }" +
+        "  return true;" +
+        "}" +
+        "local loop = iniciar(10);";
+
+    // ... (Inicialização do Lexer e Parser)
+
+    try
+    {
+        // 1. PARSE: Analisa o código e cria a AST
+        var ast = parser.ParseProgram();
+        Console.WriteLine("1. ANÁLISE SINTÁTICA CONCLUÍDA. AST GERADA.");
+
+        // 2. SEMÂNTICA: Verifica o sentido e constrói a Tabela de Símbolos
+        var semanticAnalyzer = new SemanticAnalyzer();
+        semanticAnalyzer.Analyze(ast); // Certifique-se de ter o SemanticAnalyzer.cs completo
+        Console.WriteLine("2. ANÁLISE SEMÂNTICA CONCLUÍDA. CÓDIGO VÁLIDO.");
+
+        // 3. GERAÇÃO DE CÓDIGO: Cria o runtime.js
+        var codeGenerator = new CodeGenerator();
+        string runtimeJsContent = codeGenerator.Generate(ast);
+        
+        Console.WriteLine("\n3. GERAÇÃO DE CÓDIGO CONCLUÍDA.");
+        Console.WriteLine("=======================================");
+        Console.WriteLine("// CONTEÚDO FINAL DO ARQUIVO: runtime.js");
+        Console.WriteLine("=======================================");
+        Console.Write(runtimeJsContent); // Exibe o código JS gerado
+        Console.WriteLine("=======================================");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"ERRO FATAL: {ex.Message}");
+    }
+}
+        
         Console.WriteLine("--- Cube Studio Script Compiler: Teste de Expressões Binárias ---\n");
 
         // O TESTE: Código que força a precedência de operadores
