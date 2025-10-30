@@ -139,3 +139,18 @@ namespace CubeStudioScriptCompiler
         }
     }
 }
+// Adicionar em Ast.cs
+// Representa uma Expressão Binária (Ex: LadoEsquerdo + Operador + LadoDireito)
+public class BinaryExpressionNode : ExpressionNode
+{
+    public ExpressionNode Left { get; }
+    public TipoToken Operator { get; } // Ex: OP_ADICAO, OP_IGUALDADE
+    public ExpressionNode Right { get; }
+
+    public BinaryExpressionNode(ExpressionNode left, TipoToken op, ExpressionNode right)
+    {
+        Left = left;
+        Operator = op;
+        Right = right;
+    }
+}
