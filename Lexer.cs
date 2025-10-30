@@ -234,3 +234,15 @@ namespace CubeStudioScriptCompiler
         }
     }
 }
+// Dentro de public enum TipoToken
+// ...
+OP_IGUALDADE,    // == 
+OP_DIFERENCA,    // != 
+OP_MAIOR_QUE,    // >
+OP_MENOR_QUE,    // <
+
+OP_ADICAO,       // +
+OP_SUBTRACAO,    // -
+OP_MULTIPLICACAO, // *
+OP_DIVISAO,      // /
+// ...
