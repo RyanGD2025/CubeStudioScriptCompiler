@@ -308,3 +308,69 @@ private ReturnStatementNode ParseReturnStatement()
     
     return new ReturnStatementNode(returnedValue);
 }
+// Adicionar em Parser.cs
+/// <summary>
+/// Analisa o nó mais fundamental: um Literal, um Identificador ou uma Expressão entre parênteses.
+/// </summary>
+private ExpressionNode ParsePrimary()
+{
+    // Se for (expressao), resolve a expressao primeiro
+    if (_currentToken.Tipo == TipoToken.PARENTESES_ABRE)
+    {
+        Consume(TipoToken.PARENTESES_ABRE);
+        var expr = ParseExpression(); // Chama ParseExpression recursivamente
+        Consume(TipoToken.PARENTESES_FECHA);
+        return expr;
+    }
+
+    // Se for um literal (número, string, true, false) ou identificador (variável)
+    if (_currentToken.Tipo == TipoToken.NUMERO || _currentToken.Tipo == TipoToken.STRING ||
+        _currentToken.Tipo == TipoToken.TRUE || _currentToken.Tipo == TipoToken.FALSE ||
+        _currentToken.Tipo == TipoToken.IDENTIFICADOR)
+    {
+        var node = new LiteralNode(_currentToken.Tipo, _currentToken.Lexema);
+        Consume(_currentToken.Tipo);
+        return node;
+    }
+    
+    throw new Exception($"ERRO DE SINTAXE: Expressao Invalida ('{_currentToken.Lexema}')");
+}
+
+/// <summary>
+/// Analisa todas as expressões binárias (A + B, C * D, X == Y) respeitando a precedência.
+/// </summary>
+private ExpressionNode ParseExpression(int parentPrecedence = 0)
+{
+    // Começa analisando o lado esquerdo (um literal, variável, ou expressão entre parênteses)
+    ExpressionNode left = ParsePrimary();
+
+    while (IsBinaryOperator(_currentToken.Tipo) || _currentToken.Tipo == TipoToken.IGUAL)
+    {
+        // Pega a precedência do operador atual
+        TipoToken op = _currentToken.Tipo;
+        if (!Precedence.TryGetValue(op, out int currentPrecedence))
+        {
+            // Se o operador não tiver precedência definida, sai.
+            break; 
+        }
+
+        // Se a precedência atual for MENOR ou IGUAL à precedência do pai, sai do loop.
+        // Ex: Se o pai é * (50) e o atual é + (40), o * deve ser feito primeiro.
+        if (currentPrecedence <= parentPrecedence)
+        {
+            break;
+        }
+
+        // Consome o operador
+        Consume(op);
+
+        // Analisa o lado direito recursivamente com a precedência MAIS ALTA que a atual.
+        // Isso garante que (a * b) seja analisado antes que (a * b) + c.
+        ExpressionNode right = ParseExpression(currentPrecedence); 
+
+        // Cria o nó de expressão binária
+        left = new BinaryExpressionNode(left, op, right);
+    }
+
+    return left;
+}
