@@ -250,3 +250,41 @@ namespace CubeStudioScriptCompiler
         }
     }
 }
+// Adicionar em Parser.cs
+/// <summary>
+/// Analisa: function nome(arg1, arg2) { ... }
+/// </summary>
+private FunctionDeclarationNode ParseFunctionDeclaration()
+{
+    Consume(TipoToken.FUNCTION); // Consome 'function'
+
+    Expect(TipoToken.IDENTIFICADOR);
+    var name = _currentToken.Lexema;
+    Consume(TipoToken.IDENTIFICADOR); // Nome da função
+
+    Consume(TipoToken.PARENTESES_ABRE); // Consome '('
+    
+    var parameters = new List<string>();
+
+    // Analisa os Parâmetros
+    if (_currentToken.Tipo == TipoToken.IDENTIFICADOR)
+    {
+        parameters.Add(_currentToken.Lexema);
+        Consume(TipoToken.IDENTIFICADOR);
+        
+        while (_currentToken.Tipo == TipoToken.VIRGULA)
+        {
+            Consume(TipoToken.VIRGULA); // Consome ','
+            Expect(TipoToken.IDENTIFICADOR);
+            parameters.Add(_currentToken.Lexema);
+            Consume(TipoToken.IDENTIFICADOR);
+        }
+    }
+
+    Consume(TipoToken.PARENTESES_FECHA); // Consome ')'
+
+    // O corpo da função é um bloco
+    var body = ParseBlock();
+    
+    return new FunctionDeclarationNode(name, parameters, body);
+}
