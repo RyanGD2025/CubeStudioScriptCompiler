@@ -370,3 +370,22 @@ if (node is ThrowNode throwNode)
 }
 
 // ...
+public void GenerateThrow(ThrowNode node)
+{
+    // 1. Gera o código da expressão de exceção.
+    // Isso garante que o valor (string de erro, objeto, etc.) que você quer lançar
+    // seja carregado na pilha de execução.
+    // Você deve ter um método como este:
+    GenerateExpression(node.ExceptionExpression); 
+    
+    
+    // 2. Emite o OpCode (Instrução) para lançar a exceção.
+    // Esta instrução é a mágica: ela pega o valor da pilha e
+    // desvia imediatamente o controle para o bloco 'CATCH' mais próximo
+    // (ou encerra o programa se não houver 'CATCH' ativo).
+    
+    EmitInstruction(OpCode.THROW); // Use o OpCode que representa o lançamento de exceção no seu backend
+    
+    // NOTA: Se você estiver usando CIL (o bytecode do .NET), a instrução é simplesmente 'throw'.
+    // Se for uma Máquina Virtual própria, use o seu OpCode correspondente.
+}
