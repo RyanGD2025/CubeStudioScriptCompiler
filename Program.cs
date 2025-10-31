@@ -160,3 +160,92 @@ static void Main(string[] args)
         }
     }
 }
+// Dentro de static void Main(string[] args)
+static void Main(string[] args)
+{
+    // ... (Seu código de teste CSScript e as inicializações do Lexer/Parser/SemanticAnalyzer) ...
+
+    const string codigoCsscript = 
+        // ... (Seu código de teste CSScript complexo) ...
+        "function iniciar(x) {" +
+        "  local vidas = 10 * x;" +
+        "  if (vidas == 0) {" +
+        "    print.log.Console(\"Fim de Jogo\");" +
+        "    return false;" +
+        "  } else {" +
+        "    Sprite.Pos(vidas, 50);" +
+        "  }" +
+        "  return true;" +
+        "}" +
+        "local loop = iniciar(10);";
+        
+    // ... (Toda a lógica try/catch do Parser e SemanticAnalyzer) ...
+    
+    try
+    {
+        // 1. PARSE e 2. SEMÂNTICA... (Mantenha esta parte intacta)
+        
+        // ...
+        // ...
+
+        // 3. GERAÇÃO DE CÓDIGO: Cria o runtime.js
+        var codeGenerator = new CodeGenerator();
+        string runtimeJsContent = codeGenerator.Generate(ast);
+        
+        // ===============================================
+        // 4. ETAPA DE EMPACOTAMENTO E DISTRIBUIÇÃO
+        // ===============================================
+
+        string outputDir = "CubeStudio_Build";
+        string jsFileName = "runtime.js";
+        string htmlFileName = "index.html";
+        string zipFileName = "CubeStudio_Game_Package.zip";
+
+        // Cria a pasta de saída
+        if (Directory.Exists(outputDir)) Directory.Delete(outputDir, true);
+        Directory.CreateDirectory(outputDir);
+
+        // --- A. Geração do runtime.js ---
+        string jsPath = Path.Combine(outputDir, jsFileName);
+        File.WriteAllText(jsPath, runtimeJsContent);
+        Console.WriteLine($"\n[BUILD] Salvo {jsFileName} em: {jsPath}");
+
+        // --- B. Geração do index.html (O container do seu jogo) ---
+        string htmlContent = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cube Studio Game</title>
+    <style>
+        body {{ margin: 0; background-color: #333; }}
+        #game-container {{ width: 800px; height: 600px; background-color: white; }}
+    </style>
+</head>
+<body>
+    <div id=""game-container"">
+        <p>Carregando jogo...</p>
+    </div>
+    <script src=""{jsFileName}""></script>
+</body>
+</html>
+";
+        string htmlPath = Path.Combine(outputDir, htmlFileName);
+        File.WriteAllText(htmlPath, htmlContent);
+        Console.WriteLine($"[BUILD] Salvo {htmlFileName} em: {htmlPath}");
+
+        // --- C. Criação do Pacote ZIP ---
+        if (File.Exists(zipFileName)) File.Delete(zipFileName);
+        
+        // Compacta todo o conteúdo da pasta de build
+        ZipFile.CreateFromDirectory(outputDir, zipFileName);
+        Console.WriteLine($"\n[DISTRIBUICAO] Pacote ZIP gerado com sucesso: {zipFileName}");
+        
+        // NOTA: Para gerar EXE, o C# compila este próprio programa. Para APK, seria necessário um
+        // framework como MAUI/Xamarin e etapas adicionais de build.
+
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"\nERRO FATAL DURANTE A COMPILAÇÃO OU BUILD: {ex.Message}");
+    }
+}
