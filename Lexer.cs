@@ -272,3 +272,12 @@ IF, ELSE, RETURN, CLASS,
 EXTENDS, // <--- NOVO! Para herança de classes
 LOCAL, FUNCTION, WHILE, DO,
 // ...
+// Dentro da classe Lexer, no dicionário estático Keywords
+private static readonly Dictionary<string, TipoToken> Keywords = new Dictionary<string, TipoToken>
+{
+    // ... (Keywords existentes)
+    {"class", TipoToken.CLASS}, 
+    {"extends", TipoToken.EXTENDS}, // <--- NOVO!
+    {"local", TipoToken.LOCAL}, 
+    // ...
+};
