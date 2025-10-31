@@ -549,3 +549,35 @@ private StatementNode ParseAssignmentOrCall()
         throw new Exception($"ERRO DE SINTAXE: Esperado '=' ou '(' após o identificador '{accessPath.First()}' na linha {lexer.CurrentToken.Linha}.");
     }
 }
+// Dentro da classe Parser
+/// <summary>
+/// Analisa: class Nome extends Pai { ... }
+/// </summary>
+private ClassDeclarationNode ParseClassDeclaration()
+{
+    Consume(TipoToken.CLASS); // Consome 'class'
+
+    // 1. Analisa o nome da classe
+    Expect(TipoToken.IDENTIFICADOR);
+    var className = _currentToken.Lexema;
+    Consume(TipoToken.IDENTIFICADOR); 
+
+    string parentClassName = null;
+
+    // 2. Verifica a Herança (extends)
+    if (_currentToken.Tipo == TipoToken.EXTENDS)
+    {
+        Consume(TipoToken.EXTENDS); // Consome 'extends'
+        
+        // Espera o nome da classe pai
+        Expect(TipoToken.IDENTIFICADOR);
+        parentClassName = _currentToken.Lexema;
+        Consume(TipoToken.IDENTIFICADOR); // Consome o nome da classe pai
+    }
+
+    // 3. Analisa o corpo (o bloco) da classe
+    var body = ParseBlock();
+    
+    // 4. Retorna o nó AST com o nome da classe pai incluído
+    return new ClassDeclarationNode(className, parentClassName, body);
+}
