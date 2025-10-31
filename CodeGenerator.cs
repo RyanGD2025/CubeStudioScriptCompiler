@@ -359,3 +359,14 @@ public void GenerateThrow(ThrowNode node)
     // Se estiver a gerar para CIL/.NET, o OpCode seria 'throw'.
     // Se for uma VM própria, use o OpCode que define o seu mecanismo de exceção.
 }
+// Exemplo em CodeGenerator.cs, dentro de GenerateCode(StatementNode node)
+
+// ... (código existente para outros tipos de nós)
+
+if (node is ThrowNode throwNode)
+{
+    GenerateThrow(throwNode);
+    return;
+}
+
+// ...
