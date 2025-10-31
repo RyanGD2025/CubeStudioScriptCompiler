@@ -154,3 +154,16 @@ public class BinaryExpressionNode : ExpressionNode
         Right = right;
     }
 }
+// Adicionar em Ast.cs
+// Atribuição a Propriedade ou Variável (Ex: Sprite.Opacity = 0.5; OU x = 10;)
+public class AssignmentStatementNode : StatementNode
+{
+    public ExpressionNode Target { get; } // Pode ser uma variável ou um caminho de propriedade (Ex: Sprite.Opacity)
+    public ExpressionNode Value { get; }
+
+    public AssignmentStatementNode(ExpressionNode target, ExpressionNode value)
+    {
+        Target = target;
+        Value = value;
+    }
+}
