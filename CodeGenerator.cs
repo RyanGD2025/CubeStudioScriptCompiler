@@ -243,3 +243,17 @@ private void VisitClassDeclaration(ClassDeclarationNode node)
 }
 
 // ...
+// Exemplo em CodeGenerator.cs
+
+public void GenerateCode(StatementNode node)
+{
+    // ... casos para outros nós
+
+    if (node is TryCatchNode tryCatchNode)
+    {
+        GenerateTryCatch(tryCatchNode);
+        return;
+    }
+
+    // ...
+}
