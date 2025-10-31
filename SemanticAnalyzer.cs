@@ -217,3 +217,42 @@ private void VisitStatement(StatementNode node)
             break;
     }
 }
+// No seu arquivo SemanticAnalyzer.cs
+private void VisitClassDeclaration(ClassDeclarationNode node)
+{
+    // 1. Verifica se a própria classe já foi definida no escopo atual
+    if (_currentScope.Resolve(node.Name) != null)
+    {
+        throw new Exception($"ERRO SEMÂNTICO: A classe '{node.Name}' já foi definida.");
+    }
+    
+    // 2. Verifica a Herança (Classe Pai)
+    if (node.ParentClassName != null)
+    {
+        Symbol parentSymbol = _currentScope.Resolve(node.ParentClassName);
+        
+        if (parentSymbol == null)
+        {
+            throw new Exception($"ERRO SEMÂNTICO: Classe pai '{node.ParentClassName}' não está definida.");
+        }
+        
+        // Garante que o símbolo pai é realmente uma classe, e não uma função ou variável
+        if (!(parentSymbol is ClassSymbol))
+        {
+            throw new Exception($"ERRO SEMÂNTICO: '{node.ParentClassName}' deve ser uma classe para ser herdada.");
+        }
+    }
+
+    // 3. Define a nova classe no escopo atual
+    _currentScope.Define(new ClassSymbol(node.Name));
+    Console.WriteLine($"[Semantico] Classe definida: {node.Name}");
+
+    // 4. Entra no escopo da classe para definir métodos/propriedades
+    EnterScope(node.Name + "_class");
+    
+    // 5. Visita o corpo da classe (métodos e propriedades)
+    VisitBlock(node.Body);
+
+    // 6. Sai do escopo da classe
+    ExitScope();
+}
