@@ -256,3 +256,16 @@ private void VisitClassDeclaration(ClassDeclarationNode node)
     // 6. Sai do escopo da classe
     ExitScope();
 }
+// Exemplo em SemanticAnalyzer.cs
+public void AnalyzeStatement(StatementNode node, SymbolTable scope)
+{
+    // ... casos para outros StatementNodes (IfNode, WhileNode, etc.)
+    
+    if (node is TryCatchNode tryCatchNode)
+    {
+        AnalyzeTryCatch(tryCatchNode, scope);
+        return;
+    }
+
+    // ...
+}
