@@ -1,0 +1,39 @@
+name: Publicar Pacote NuGet (GitHub Packages)
+
+on:
+  push:
+    # Este workflow será ativado quando você fizer um push de uma tag (versão)
+    tags:
+      - 'v*' 
+  workflow_dispatch: # Permite que você execute manualmente
+    
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest # Executa em um ambiente Linux
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Garante que todo o histórico esteja disponível
+        
+    - name: Configurar .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x # Ajuste para a versão do .NET que você usa
+        
+    - name: Restaurar dependências
+      run: dotnet restore
+      
+    # --- Passo de Geração do Pacote ---
+    - name: Empacotar (Pack) o Projeto
+      id: pack
+      run: dotnet pack --configuration Release /p:Version=${GITHUB_REF_NAME} --output nuget_packages
+      # O GITHUB_REF_NAME captura o nome da tag (ex: 1.0.0) para usar como versão do pacote
+      
+    # --- Passo de Publicação no GitHub Packages ---
+    - name: Publicar Pacote NuGet no GitHub Packages
+      run: dotnet nuget push nuget_packages/*.nupkg --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }}
+      env:
+        # GITHUB_TOKEN é um segredo automático fornecido pelo GitHub Actions
+        NUGET_PUSH_API_KEY: ${{ secrets.GITHUB_TOKEN }}
+
