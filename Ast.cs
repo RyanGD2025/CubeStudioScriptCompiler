@@ -185,3 +185,12 @@ public class ClassDeclarationNode : StatementNode
         Body = body;
     }
 }
+// Exemplo em Ast.cs
+
+public class ThrowNode : StatementNode
+{
+    // A expressão (argumento) que está sendo lançada (ex: uma string de erro, um objeto de exceção)
+    public ExpressionNode ExceptionExpression { get; set; } 
+
+    // Construtor, etc.
+}
