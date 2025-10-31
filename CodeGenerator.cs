@@ -218,3 +218,28 @@ private void VisitStatement(StatementNode node)
     case AssignmentStatementNode n: VisitAssignmentStatement(n); break; // <-- NOVO
     // ...
 }
+// Dentro da classe CodeGenerator
+// ...
+
+private void VisitClassDeclaration(ClassDeclarationNode node)
+{
+    // Inicia a declaração da classe: "class Nome"
+    StringBuilder classHeader = new StringBuilder();
+    classHeader.Append($"class {node.Name}");
+
+    // Adiciona a herança, se existir: " extends Pai"
+    if (!string.IsNullOrEmpty(node.ParentClassName))
+    {
+        classHeader.Append($" extends {node.ParentClassName}");
+    }
+    
+    // Escreve o cabeçalho completo
+    AppendLine(classHeader.ToString());
+    
+    // O corpo da classe (métodos e propriedades) é o bloco
+    // NOTA: Para um compilador real, o bloco precisaria de uma visita mais granular
+    // para tratar construtores e métodos separadamente das propriedades.
+    VisitBlock(node.Body); 
+}
+
+// ...
