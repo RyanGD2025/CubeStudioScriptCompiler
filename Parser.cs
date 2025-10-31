@@ -436,3 +436,16 @@ private StatementNode ParseAssignmentOrCall()
     // Retorna ao estado anterior por segurança, priorizando o CallStatement
     return ParseCallStatement();
 }
+// Dentro da função StatementNode ParseStatement()
+public StatementNode ParseStatement()
+{
+    // ... (Manter ifs para LOCAL, IF, WHILE, FUNCTION, CLASS, RETURN)
+    
+    // Se a instrução começa com um nome (variável, propriedade ou função)
+    else if (_currentToken.Tipo == TipoToken.IDENTIFICADOR)
+    {
+        return ParseAssignmentOrCall(); // <-- NOVO PONTO DE ENTRADA
+    }
+    
+    // ... (o resto do switch/lógica de erro)
+}
