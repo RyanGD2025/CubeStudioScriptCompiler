@@ -199,3 +199,21 @@ private void VisitBinaryExpression(BinaryExpressionNode node)
 // Adicionar esta linha no switch:
 case CallStatementNode n: VisitCallStatement(n); break; 
 // ...
+// No seu arquivo SemanticAnalyzer.cs, dentro do método VisitStatement
+private void VisitStatement(StatementNode node)
+{
+    switch (node)
+    {
+        case LocalDeclarationNode n: VisitLocalDeclaration(n); break;
+        case FunctionDeclarationNode n: VisitFunctionDeclaration(n); break;
+        case ClassDeclarationNode n: VisitClassDeclaration(n); break;
+        case BlockNode n: VisitBlock(n); break;
+        case CallStatementNode n: VisitCallStatement(n); break; 
+        case IfStatementNode n: VisitIfStatement(n); break;     // <-- NOVO!
+        case WhileStatementNode n: VisitWhileStatement(n); break; // <-- NOVO!
+        case ReturnStatementNode n: /* Adicionar lógica de verificação de retorno, ex: se está dentro de função */ break;
+        default:
+            // Por enquanto, ignora nós sem necessidade de definição
+            break;
+    }
+}
