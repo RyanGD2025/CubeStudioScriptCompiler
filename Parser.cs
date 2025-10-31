@@ -581,3 +581,23 @@ private ClassDeclarationNode ParseClassDeclaration()
     // 4. Retorna o nó AST com o nome da classe pai incluído
     return new ClassDeclarationNode(className, parentClassName, body);
 }
+// Exemplo em Parser.cs, dentro de ParseStatement()
+
+// ...
+if (CurrentToken.Type == TokenType.KeywordThrow)
+{
+    // 1. Cria o nó
+    var throwNode = new ThrowNode();
+    
+    // 2. Consome o token 'throw'
+    MatchToken(TokenType.KeywordThrow);
+    
+    // 3. Analisa a expressão que está sendo lançada (pode ser "throw "Erro!";" ou "throw new Exception();")
+    throwNode.ExceptionExpression = ParseExpression(); // Assume que você tem um método para analisar expressões
+    
+    // 4. Consome o ponto e vírgula (ou o terminador de instrução da sua linguagem)
+    MatchToken(TokenType.Semicolon); 
+    
+    return throwNode;
+}
+// ...
