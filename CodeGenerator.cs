@@ -335,3 +335,12 @@ public void GenerateTryCatch(TryCatchNode node)
     // 12. Encerra o Bloco de Proteção
     EmitInstruction(OpCode.END_TRY_CATCH);
 }
+// Exemplo em CodeGenerator.cs, dentro de GenerateCode(StatementNode node)
+
+// ...
+if (node is ThrowNode throwNode)
+{
+    GenerateThrow(throwNode);
+    return;
+}
+// ...
