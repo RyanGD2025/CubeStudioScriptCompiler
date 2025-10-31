@@ -257,3 +257,81 @@ public void GenerateCode(StatementNode node)
 
     // ...
 }
+public void GenerateTryCatch(TryCatchNode node)
+{
+    // 1. Cria os Rótulos (Labels) necessários
+    var catchLabel = NewLabel();       // Onde o fluxo salta em caso de erro
+    var finallyLabel = NewLabel();     // Opcional: Onde o fluxo salta para o 'finally'
+    var endLabel = NewLabel();         // Onde o fluxo vai após tudo ser executado
+    
+    // --- Início do Bloco TRY ---
+    
+    // 2. Emite o início do bloco de proteção
+    // Esta instrução (ou metadado) informa ao runtime que o código a seguir
+    // deve ser monitorado.
+    EmitInstruction(OpCode.BEGIN_TRY, catchLabel); 
+
+    // 3. Gera o código do bloco TRY
+    GenerateCode(node.TryBlock);
+    
+    // 4. Se o TRY for bem-sucedido, pule para o FINALLY ou FIM
+    if (node.FinallyBlock != null)
+    {
+        EmitInstruction(OpCode.JUMP, finallyLabel);
+    }
+    else
+    {
+        EmitInstruction(OpCode.JUMP, endLabel);
+    }
+    
+    // --- Fim do Bloco TRY ---
+    
+    
+    // --- Início do Bloco CATCH ---
+    
+    // 5. Marca o ponto de salto do CATCH
+    MarkLabel(catchLabel); 
+    
+    // 6. Manipula o Objeto de Exceção
+    if (!string.IsNullOrEmpty(node.ExceptionIdentifier))
+    {
+        // No .NET/CIL, a exceção é implicitamente colocada na pilha.
+        // Se você usa uma VM própria, precisa de uma instrução para:
+        // a) Pegar o objeto de exceção do sistema de runtime (OpCode.GET_EXCEPTION).
+        // b) Armazená-lo na variável local de CATCH que você definiu na análise semântica.
+        EmitInstruction(OpCode.STORE_LOCAL, node.ExceptionIdentifier); 
+    }
+    
+    // 7. Gera o código do bloco CATCH
+    GenerateCode(node.CatchBlock);
+
+    // 8. Após o CATCH, pule para o FINALLY ou FIM
+    if (node.FinallyBlock != null)
+    {
+        EmitInstruction(OpCode.JUMP, finallyLabel);
+    }
+    else
+    {
+        EmitInstruction(OpCode.JUMP, endLabel);
+    }
+    
+    // --- Fim do Bloco CATCH ---
+    
+    
+    // --- Início do Bloco FINALLY (Opcional) ---
+    
+    if (node.FinallyBlock != null)
+    {
+        // 9. Marca o ponto de salto do FINALLY
+        MarkLabel(finallyLabel);
+        
+        // 10. Gera o código do bloco FINALLY
+        GenerateCode(node.FinallyBlock);
+    }
+    
+    // 11. Marca o fim de toda a estrutura
+    MarkLabel(endLabel);
+    
+    // 12. Encerra o Bloco de Proteção
+    EmitInstruction(OpCode.END_TRY_CATCH);
+}
