@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using CubeStudioScriptCompiler;
 using System.Linq;
+using System.IO; // Necessário para operações de arquivo
+using System.IO.Compression; // Necessário para criar o ZIP
 
 class Program
 {
