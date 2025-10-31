@@ -167,3 +167,21 @@ public class AssignmentStatementNode : StatementNode
         Value = value;
     }
 }
+// Dentro de CubeStudioScriptCompiler
+// ...
+// Declaração de Classe (Ex: class Nome extends Pai { ... })
+public class ClassDeclarationNode : StatementNode
+{
+    public string Name { get; }
+    // NOVO: Nome da classe que está sendo herdada (pode ser null)
+    public string ParentClassName { get; } 
+    public BlockNode Body { get; }
+
+    // Construtor atualizado para incluir ParentClassName
+    public ClassDeclarationNode(string name, string parentClassName, BlockNode body)
+    {
+        Name = name;
+        ParentClassName = parentClassName;
+        Body = body;
+    }
+}
