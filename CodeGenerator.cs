@@ -200,3 +200,21 @@ namespace CubeStudioScriptCompiler
         }
     }
 }
+// Adicione em CodeGenerator.cs o método de visita
+private void VisitAssignmentStatement(AssignmentStatementNode node)
+{
+    string target = VisitExpression(node.Target);
+    string value = VisitExpression(node.Value);
+
+    // No futuro, se Target for um caminho (Sprite.Opacity), traduzir para Sprite.setOpacity(value);
+    // Por enquanto, apenas traduz atribuições simples de JS:
+    AppendLine($"{target} = {value};");
+}
+
+// Atualize VisitStatement para incluir o novo nó:
+private void VisitStatement(StatementNode node)
+{
+    // ...
+    case AssignmentStatementNode n: VisitAssignmentStatement(n); break; // <-- NOVO
+    // ...
+}
