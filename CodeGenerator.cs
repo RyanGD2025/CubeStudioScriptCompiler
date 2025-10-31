@@ -344,3 +344,18 @@ if (node is ThrowNode throwNode)
     return;
 }
 // ...
+public void GenerateThrow(ThrowNode node)
+{
+    // 1. Gera o código da expressão de exceção
+    // Isso garante que o objeto de exceção (ou a string/valor) seja colocado na pilha.
+    GenerateExpression(node.ExceptionExpression); 
+    
+    // 2. Emite o OpCode para lançar a exceção
+    // Esta instrução faz duas coisas cruciais:
+    // a) Pega o valor/objeto no topo da pilha.
+    // b) Interrompe a execução normal e desvia o controle para o bloco CATCH apropriado.
+    EmitInstruction(OpCode.THROW); 
+    
+    // Se estiver a gerar para CIL/.NET, o OpCode seria 'throw'.
+    // Se for uma VM própria, use o OpCode que define o seu mecanismo de exceção.
+}
