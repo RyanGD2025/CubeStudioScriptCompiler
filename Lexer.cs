@@ -265,3 +265,10 @@ OP_SUBTRACAO,    // -
 OP_MULTIPLICACAO, // *
 OP_DIVISAO,      // /
 // ...
+// Dentro de public enum TipoToken
+// ...
+// Keywords
+IF, ELSE, RETURN, CLASS,
+EXTENDS, // <--- NOVO! Para herança de classes
+LOCAL, FUNCTION, WHILE, DO,
+// ...
