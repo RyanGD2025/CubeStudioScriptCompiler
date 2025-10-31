@@ -449,3 +449,28 @@ public StatementNode ParseStatement()
     
     // ... (o resto do switch/lógica de erro)
 }
+// Adicionar em Parser.cs
+/// <summary>
+/// Analisa um caminho de acesso encadeado (Ex: Sprite.Pos, print.log.Console).
+/// O caminho é retornado como uma lista de strings.
+/// </summary>
+private List<string> ParseAccessPath()
+{
+    List<string> path = new List<string>();
+    
+    // O caminho deve SEMPRE começar com um IDENTIFICADOR.
+    Expect(TipoToken.IDENTIFICADOR);
+    path.Add(_currentToken.Lexema);
+    Consume(TipoToken.IDENTIFICADOR);
+
+    // Continua consumindo DOTs e IDENTIFICADORes subsequentes
+    while (_currentToken.Tipo == TipoToken.PONTO)
+    {
+        Consume(TipoToken.PONTO);
+        Expect(TipoToken.IDENTIFICADOR);
+        path.Add(_currentToken.Lexema);
+        Consume(TipoToken.IDENTIFICADOR);
+    }
+    
+    return path;
+}
