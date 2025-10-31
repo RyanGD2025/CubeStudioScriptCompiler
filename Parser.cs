@@ -474,3 +474,78 @@ private List<string> ParseAccessPath()
     
     return path;
 }
+// Adicionar em Parser.cs
+/// <summary>
+/// Analisa se a instrução é uma Atribuição (x = 10;) ou uma Chamada de Função (print.log.Console();).
+/// </summary>
+private StatementNode ParseAssignmentOrCall()
+{
+    // 1. Analisa o caminho de acesso (Ex: 'Sprite.Pos' ou 'iniciar')
+    List<string> accessPath = ParseAccessPath();
+    
+    // 2. Verifica o que vem depois do caminho:
+    
+    // --- CASO 1: ATRIBUIÇÃO (x = 10; ou Sprite.Pos = vector(x, y);) ---
+    if (_currentToken.Tipo == TipoToken.IGUAL)
+    {
+        Consume(TipoToken.IGUAL); // Consome '='
+        
+        // O lado esquerdo (Target) de uma atribuição é uma expressão.
+        // Neste caso, o 'target' é o próprio AccessPath, que precisa ser
+        // representado como uma ExpressionNode.
+        
+        // Criamos um LiteralNode para representar o alvo (não é ideal, mas simplifica o AST)
+        // NOTA: Para um compilador real, o 'target' seria um nó especial de "Propriedade/Variável".
+        
+        // Vamos usar um nó auxiliar simples para representar o lado esquerdo
+        LiteralNode targetLiteral;
+        if (accessPath.Count == 1)
+        {
+            // Atribuição simples de variável (x = 10;)
+            targetLiteral = new LiteralNode(TipoToken.IDENTIFICADOR, accessPath[0]);
+        }
+        else
+        {
+            // Atribuição a Propriedade (Sprite.Pos = x;)
+            targetLiteral = new LiteralNode(TipoToken.IDENTIFICADOR, string.Join(".", accessPath));
+        }
+
+        ExpressionNode value = ParseExpression(); // Analisa o valor a ser atribuído
+
+        Consume(TipoToken.PONTO_E_VIRGULA);
+        return new AssignmentStatementNode(targetLiteral, value);
+    }
+    
+    // --- CASO 2: CHAMADA DE FUNÇÃO (iniciar(x); ou print.log.Console(msg);) ---
+    else if (_currentToken.Tipo == TipoToken.PARENTESES_ABRE)
+    {
+        // Se a chamada de função for um caminho longo, a lista 'accessPath' já o contém.
+        
+        Consume(TipoToken.PARENTESES_ABRE); // Consome '('
+        
+        List<ExpressionNode> args = new List<ExpressionNode>();
+        if (_currentToken.Tipo != TipoToken.PARENTESES_FECHA)
+        {
+            // Loop para analisar os argumentos
+            do
+            {
+                args.Add(ParseExpression()); // Analisa o argumento como uma expressão
+                if (_currentToken.Tipo == TipoToken.VIRGULA)
+                {
+                    Consume(TipoToken.VIRGULA);
+                }
+            } while (_currentToken.Tipo != TipoToken.PARENTESES_FECHA);
+        }
+        
+        Consume(TipoToken.PARENTESES_FECHA); // Consome ')'
+        Consume(TipoToken.PONTO_E_VIRGULA);
+        
+        return new CallStatementNode(accessPath, args);
+    }
+    
+    // --- ERRO ---
+    else
+    {
+        throw new Exception($"ERRO DE SINTAXE: Esperado '=' ou '(' após o identificador '{accessPath.First()}' na linha {lexer.CurrentToken.Linha}.");
+    }
+}
